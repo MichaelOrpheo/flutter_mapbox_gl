@@ -14,6 +14,7 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
   LatLng? _dragOrigin;
   LatLng? _dragPrevious;
   bool _dragEnabled = true;
+  bool _showUserHeading = false;
   final _addedFeaturesByLayer = <String, FeatureCollection>{};
 
   final _interactiveFeatureLayerIds = Set<String>();
@@ -60,6 +61,8 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
   @override
   Future<void> initPlatform(int id) async {
     await _addStylesheetToShadowRoot(_mapElement);
+    _showUserHeading = _creationParams['showUserHeading'] ?? false;
+
     if (_creationParams.containsKey('initialCameraPosition')) {
       var camera = _creationParams['initialCameraPosition'];
       _dragEnabled = _creationParams['dragEnabled'] ?? true;
@@ -456,6 +459,7 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
       GeolocateControlOptions(
         positionOptions: PositionOptions(enableHighAccuracy: true),
         trackUserLocation: trackUserLocation,
+        showUserHeading: _showUserHeading,
         showAccuracyCircle: true,
         showUserLocation: true,
       ),

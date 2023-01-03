@@ -26,6 +26,7 @@ class MapboxMap extends StatefulWidget {
     this.tiltGesturesEnabled = true,
     this.doubleClickZoomEnabled,
     this.dragEnabled = true,
+    this.showUserHeading = false,
     this.trackCameraPosition = false,
     this.myLocationEnabled = false,
     this.myLocationTrackingMode = MyLocationTrackingMode.None,
@@ -99,6 +100,11 @@ class MapboxMap extends StatefulWidget {
   /// Disable to avoid performance issues that from the drag event listeners.
   /// Biggest impact in android
   final bool dragEnabled;
+
+  /// True if the user heading should be shown.
+  ///
+  /// Draw an arrow next to the location dot to indicate which direction the device is heading.
+  final bool showUserHeading;
 
   /// Geographical bounding box for the camera target.
   final CameraTargetBounds cameraTargetBounds;
@@ -263,6 +269,7 @@ class _MapboxMapState extends State<MapboxMap> {
       'dragEnabled': widget.dragEnabled,
       'useDelayedDisposal': widget.useDelayedDisposal,
       'useHybridCompositionOverride': widget.useHybridCompositionOverride,
+      'showUserHeading': widget.showUserHeading,
     };
     return _mapboxGlPlatform.buildView(
         creationParams, onPlatformViewCreated, widget.gestureRecognizers);
