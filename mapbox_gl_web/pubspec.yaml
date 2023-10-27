@@ -24,7 +24,7 @@ dependencies:
     git:
       url: https://github.com/MichaelOrpheo/mapbox-gl-dart.git
       ref: master
-  image: ^3.0.0
+  image: '>=3.0.0 <5.0.0'
 
 dependency_overrides:
   mapbox_gl_platform_interface:
