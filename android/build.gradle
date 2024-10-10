@@ -1,17 +1,6 @@
 group 'com.mapbox.mapboxgl'
 version '1.0-SNAPSHOT'
 
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.0'
-    }
-}
-
 rootProject.allprojects {
     def token = System.getenv('SDK_REGISTRY_TOKEN') ?: project.properties['MAPBOX_DOWNLOADS_TOKEN']
     if (token == null || token.empty) {
@@ -38,6 +27,7 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 31
     ndkVersion "20.1.5948944"
+    namespace "com.mapbox.mapboxgl"
 
     defaultConfig {
         minSdkVersion 20
