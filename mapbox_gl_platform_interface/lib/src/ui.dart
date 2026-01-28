@@ -48,35 +48,16 @@ class MapboxStyles {
 }
 
 /// The camera mode, which determines how the map camera will track the rendered location.
-enum MyLocationTrackingMode {
-  None,
-  Tracking,
-  TrackingCompass,
-  TrackingGPS,
-}
+enum MyLocationTrackingMode { None, Tracking, TrackingCompass, TrackingGPS }
 
 /// Render mode
-enum MyLocationRenderMode {
-  NORMAL,
-  COMPASS,
-  GPS,
-}
+enum MyLocationRenderMode { NORMAL, COMPASS, GPS }
 
 /// Compass View Position
-enum CompassViewPosition {
-  TopLeft,
-  TopRight,
-  BottomLeft,
-  BottomRight,
-}
+enum CompassViewPosition { TopLeft, TopRight, BottomLeft, BottomRight }
 
 /// Attribution Button Position
-enum AttributionButtonPosition {
-  TopLeft,
-  TopRight,
-  BottomLeft,
-  BottomRight,
-}
+enum AttributionButtonPosition { TopLeft, TopRight, BottomLeft, BottomRight }
 
 /// Bounds for the map camera target.
 // Used with [MapboxMapOptions] to wrap a [LatLngBounds] value. This allows
@@ -98,10 +79,10 @@ class CameraTargetBounds {
   dynamic toJson() => <dynamic>[bounds?.toList()];
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final CameraTargetBounds typedOther = other;
+    final CameraTargetBounds typedOther = other as CameraTargetBounds;
     return bounds == typedOther.bounds;
   }
 
@@ -129,16 +110,18 @@ class MinMaxZoomPreference {
   final double? maxZoom;
 
   /// Unbounded zooming.
-  static const MinMaxZoomPreference unbounded =
-      MinMaxZoomPreference(null, null);
+  static const MinMaxZoomPreference unbounded = MinMaxZoomPreference(
+    null,
+    null,
+  );
 
   dynamic toJson() => <dynamic>[minZoom, maxZoom];
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (runtimeType != other.runtimeType) return false;
-    final MinMaxZoomPreference typedOther = other;
+    final MinMaxZoomPreference typedOther = other as MinMaxZoomPreference;
     return minZoom == typedOther.minZoom && maxZoom == typedOther.maxZoom;
   }
 
