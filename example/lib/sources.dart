@@ -14,11 +14,12 @@ class StyleInfo {
   final Future<void> Function(MapboxMapController) addDetails;
   final CameraPosition position;
 
-  const StyleInfo(
-      {required this.name,
-      required this.baseStyle,
-      required this.addDetails,
-      required this.position});
+  const StyleInfo({
+    required this.name,
+    required this.baseStyle,
+    required this.addDetails,
+    required this.position,
+  });
 }
 
 class Sources extends ExamplePage {
@@ -50,171 +51,187 @@ class FullMapState extends State<FullMap> {
     await controller.addSource(
       "watercolor",
       RasterSourceProperties(
-          tiles: [
-            'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg'
-          ],
-          tileSize: 256,
-          attribution:
-              'Map tiles by <a target="_top" rel="noopener" href="http://stamen.com">Stamen Design</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>'),
+        tiles: [
+          'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg',
+        ],
+        tileSize: 256,
+        attribution:
+            'Map tiles by <a target="_top" rel="noopener" href="http://stamen.com">Stamen Design</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a target="_top" rel="noopener" href="http://openstreetmap.org">OpenStreetMap</a>, under <a target="_top" rel="noopener" href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>',
+      ),
     );
     await controller.addLayer(
-        "watercolor", "watercolor", RasterLayerProperties());
+      "watercolor",
+      "watercolor",
+      RasterLayerProperties(),
+    );
   }
 
   static Future<void> addGeojsonCluster(MapboxMapController controller) async {
     await controller.addSource(
-        "earthquakes",
-        GeojsonSourceProperties(
-            data:
-                'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson',
-            cluster: true,
-            clusterMaxZoom: 14, // Max zoom to cluster points on
-            clusterRadius:
-                50 // Radius of each cluster when clustering points (defaults to 50)
-            ));
+      "earthquakes",
+      GeojsonSourceProperties(
+        data: 'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson',
+        cluster: true,
+        clusterMaxZoom: 14, // Max zoom to cluster points on
+        clusterRadius:
+            50, // Radius of each cluster when clustering points (defaults to 50)
+      ),
+    );
     await controller.addLayer(
-        "earthquakes",
-        "earthquakes-circles",
-        CircleLayerProperties(circleColor: [
+      "earthquakes",
+      "earthquakes-circles",
+      CircleLayerProperties(
+        circleColor: [
           Expressions.step,
           [Expressions.get, 'point_count'],
           '#51bbd6',
           100,
           '#f1f075',
           750,
-          '#f28cb1'
-        ], circleRadius: [
+          '#f28cb1',
+        ],
+        circleRadius: [
           Expressions.step,
           [Expressions.get, 'point_count'],
           20,
           100,
           30,
           750,
-          40
-        ]));
+          40,
+        ],
+      ),
+    );
     await controller.addLayer(
-        "earthquakes",
-        "earthquakes-count",
-        SymbolLayerProperties(
-          textField: [Expressions.get, 'point_count_abbreviated'],
-          textFont: ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-          textSize: 12,
-        ));
+      "earthquakes",
+      "earthquakes-count",
+      SymbolLayerProperties(
+        textField: [Expressions.get, 'point_count_abbreviated'],
+        textFont: ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+        textSize: 12,
+      ),
+    );
   }
 
   static Future<void> addGeojsonHeatmap(MapboxMapController controller) async {
     await controller.addSource(
-        "earthquakes-heatmap-source",
-        GeojsonSourceProperties(
-          data:
-              'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson',
-        ));
+      "earthquakes-heatmap-source",
+      GeojsonSourceProperties(
+        data: 'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson',
+      ),
+    );
     await controller.addLayer(
-        "earthquakes-heatmap-source",
-        "earthquakes-heatmap-layer",
-        HeatmapLayerProperties(
-          heatmapColor: [
-            Expressions.interpolate,
-            ["linear"],
-            ["heatmap-density"],
-            0,
-            "rgba(33.0, 102.0, 172.0, 0.0)",
-            0.2,
-            "rgb(103.0, 169.0, 207.0)",
-            0.4,
-            "rgb(209.0, 229.0, 240.0)",
-            0.6,
-            "rgb(253.0, 219.0, 240.0)",
-            0.8,
-            "rgb(239.0, 138.0, 98.0)",
-            1,
-            "rgb(178.0, 24.0, 43.0)",
-          ],
-          heatmapWeight: [
-            Expressions.interpolate,
-            ["linear"],
-            [Expressions.get, "mag"],
-            0,
-            0,
-            6,
-            1,
-          ],
-          heatmapIntensity: [
-            Expressions.interpolate,
-            ["linear"],
-            [Expressions.zoom],
-            0,
-            1,
-            9,
-            3,
-          ],
-          heatmapRadius: [
-            Expressions.interpolate,
-            ["linear"],
-            [Expressions.zoom],
-            0,
-            2,
-            9,
-            20,
-          ],
-          heatmapOpacity: [
-            Expressions.interpolate,
-            ["linear"],
-            [Expressions.zoom],
-            7,
-            1,
-            9,
-            0.5
-          ],
-        ));
+      "earthquakes-heatmap-source",
+      "earthquakes-heatmap-layer",
+      HeatmapLayerProperties(
+        heatmapColor: [
+          Expressions.interpolate,
+          ["linear"],
+          ["heatmap-density"],
+          0,
+          "rgba(33.0, 102.0, 172.0, 0.0)",
+          0.2,
+          "rgb(103.0, 169.0, 207.0)",
+          0.4,
+          "rgb(209.0, 229.0, 240.0)",
+          0.6,
+          "rgb(253.0, 219.0, 240.0)",
+          0.8,
+          "rgb(239.0, 138.0, 98.0)",
+          1,
+          "rgb(178.0, 24.0, 43.0)",
+        ],
+        heatmapWeight: [
+          Expressions.interpolate,
+          ["linear"],
+          [Expressions.get, "mag"],
+          0,
+          0,
+          6,
+          1,
+        ],
+        heatmapIntensity: [
+          Expressions.interpolate,
+          ["linear"],
+          [Expressions.zoom],
+          0,
+          1,
+          9,
+          3,
+        ],
+        heatmapRadius: [
+          Expressions.interpolate,
+          ["linear"],
+          [Expressions.zoom],
+          0,
+          2,
+          9,
+          20,
+        ],
+        heatmapOpacity: [
+          Expressions.interpolate,
+          ["linear"],
+          [Expressions.zoom],
+          7,
+          1,
+          9,
+          0.5,
+        ],
+      ),
+    );
   }
 
   static Future<void> addIndoorBuilding(MapboxMapController controller) async {
-    final jsonStr =
-        await rootBundle.loadString("assets/fill-extrusion/indoor_3d_map.json");
+    final jsonStr = await rootBundle.loadString(
+      "assets/fill-extrusion/indoor_3d_map.json",
+    );
     await controller.addGeoJsonSource(
-        "indoor-building-source", jsonDecode(jsonStr));
+      "indoor-building-source",
+      jsonDecode(jsonStr),
+    );
     await controller.addFillExtrusionLayer(
-        "indoor-building-source",
-        "indoor-building-layer",
-        FillExtrusionLayerProperties(
-          fillExtrusionOpacity: 0.5,
-          fillExtrusionHeight: [Expressions.get, "height"],
-          fillExtrusionBase: [Expressions.get, "base_height"],
-          fillExtrusionColor: [Expressions.get, "color"],
-        ));
+      "indoor-building-source",
+      "indoor-building-layer",
+      FillExtrusionLayerProperties(
+        fillExtrusionOpacity: 0.5,
+        fillExtrusionHeight: [Expressions.get, "height"],
+        fillExtrusionBase: [Expressions.get, "base_height"],
+        fillExtrusionColor: [Expressions.get, "color"],
+      ),
+    );
   }
 
   static Future<void> addVector(MapboxMapController controller) async {
     await controller.addSource(
-        "terrain",
-        VectorSourceProperties(
-          url: "mapbox://mapbox.mapbox-terrain-v2",
-        ));
+      "terrain",
+      VectorSourceProperties(url: "mapbox://mapbox.mapbox-terrain-v2"),
+    );
 
     await controller.addLayer(
-        "terrain",
-        "contour",
-        LineLayerProperties(
-          lineColor: "#ff69b4",
-          lineWidth: 1,
-          lineCap: "round",
-          lineJoin: "round",
-        ),
-        sourceLayer: "contour");
+      "terrain",
+      "contour",
+      LineLayerProperties(
+        lineColor: "#ff69b4",
+        lineWidth: 1,
+        lineCap: "round",
+        lineJoin: "round",
+      ),
+      sourceLayer: "contour",
+    );
   }
 
   static Future<void> addImage(MapboxMapController controller) async {
     await controller.addSource(
-        "radar",
-        ImageSourceProperties(
-            url: "https://docs.mapbox.com/mapbox-gl-js/assets/radar.gif",
-            coordinates: [
-              [-80.425, 46.437],
-              [-71.516, 46.437],
-              [-71.516, 37.936],
-              [-80.425, 37.936]
-            ]));
+      "radar",
+      ImageSourceProperties(
+        url: "https://docs.mapbox.com/mapbox-gl-js/assets/radar.gif",
+        coordinates: [
+          [-80.425, 46.437],
+          [-71.516, 46.437],
+          [-71.516, 37.936],
+          [-80.425, 37.936],
+        ],
+      ),
+    );
 
     await controller.addRasterLayer(
       "radar",
@@ -225,36 +242,37 @@ class FullMapState extends State<FullMap> {
 
   static Future<void> addVideo(MapboxMapController controller) async {
     await controller.addSource(
-        "video",
-        VideoSourceProperties(urls: [
+      "video",
+      VideoSourceProperties(
+        urls: [
           'https://static-assets.mapbox.com/mapbox-gl-js/drone.mp4',
-          'https://static-assets.mapbox.com/mapbox-gl-js/drone.webm'
-        ], coordinates: [
+          'https://static-assets.mapbox.com/mapbox-gl-js/drone.webm',
+        ],
+        coordinates: [
           [-122.51596391201019, 37.56238816766053],
           [-122.51467645168304, 37.56410183312965],
           [-122.51309394836426, 37.563391708549425],
-          [-122.51423120498657, 37.56161849366671]
-        ]));
-
-    await controller.addRasterLayer(
-      "video",
-      "video",
-      RasterLayerProperties(),
+          [-122.51423120498657, 37.56161849366671],
+        ],
+      ),
     );
+
+    await controller.addRasterLayer("video", "video", RasterLayerProperties());
   }
 
   static Future<void> addDem(MapboxMapController controller) async {
     await controller.addSource(
-        "dem",
-        RasterDemSourceProperties(
-            url: "mapbox://mapbox.mapbox-terrain-dem-v1"));
+      "dem",
+      RasterDemSourceProperties(url: "mapbox://mapbox.mapbox-terrain-dem-v1"),
+    );
 
     await controller.addLayer(
       "dem",
       "hillshade",
       HillshadeLayerProperties(
-          hillshadeExaggeration: 1,
-          hillshadeShadowColor: Colors.blue.toHexStringRGB()),
+        hillshadeExaggeration: 1,
+        hillshadeShadowColor: Colors.blue.toHexStringRGB(),
+      ),
     );
   }
 
@@ -288,7 +306,11 @@ class FullMapState extends State<FullMap> {
       baseStyle: MapboxStyles.LIGHT,
       addDetails: addIndoorBuilding,
       position: CameraPosition(
-          target: LatLng(41.86625, -87.61694), zoom: 16, tilt: 20, bearing: 40),
+        target: LatLng(41.86625, -87.61694),
+        zoom: 16,
+        tilt: 20,
+        bearing: 40,
+      ),
     ),
     StyleInfo(
       name: "Raster",
@@ -309,15 +331,19 @@ class FullMapState extends State<FullMap> {
         baseStyle: MapboxStyles.SATELLITE,
         addDetails: addVideo,
         position: CameraPosition(
-            target: LatLng(37.562984, -122.514426), zoom: 17, bearing: -96),
+          target: LatLng(37.562984, -122.514426),
+          zoom: 17,
+          bearing: -96,
+        ),
       ),
   ];
 
   _onStyleLoadedCallback() async {
     final styleInfo = _stylesAndLoaders[selectedStyleId];
     styleInfo.addDetails(controller!);
-    controller!
-        .animateCamera(CameraUpdate.newCameraPosition(styleInfo.position));
+    controller!.animateCamera(
+      CameraUpdate.newCameraPosition(styleInfo.position),
+    );
   }
 
   @override
@@ -327,41 +353,44 @@ class FullMapState extends State<FullMap> {
         _stylesAndLoaders[(selectedStyleId + 1) % _stylesAndLoaders.length]
             .name;
     return new Scaffold(
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: FloatingActionButton.extended(
-            icon: Icon(Icons.swap_horiz),
-            label: SizedBox(
-                width: 120, child: Center(child: Text("To $nextName"))),
-            onPressed: () => setState(
-              () => selectedStyleId =
-                  (selectedStyleId + 1) % _stylesAndLoaders.length,
-            ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: FloatingActionButton.extended(
+          icon: Icon(Icons.swap_horiz),
+          label: SizedBox(
+            width: 120,
+            child: Center(child: Text("To $nextName")),
+          ),
+          onPressed: () => setState(
+            () => selectedStyleId =
+                (selectedStyleId + 1) % _stylesAndLoaders.length,
           ),
         ),
-        body: Stack(
-          children: [
-            MapboxMap(
-              styleString: styleInfo.baseStyle,
-              accessToken: MapsDemo.ACCESS_TOKEN,
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: styleInfo.position,
-              onStyleLoadedCallback: _onStyleLoadedCallback,
-            ),
-            Container(
-              padding: EdgeInsets.all(8),
-              alignment: Alignment.topCenter,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "Current source ${styleInfo.name}",
-                    textScaleFactor: 1.4,
-                  ),
+      ),
+      body: Stack(
+        children: [
+          MapboxMap(
+            styleString: styleInfo.baseStyle,
+            accessToken: MapsDemo.ACCESS_TOKEN,
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: styleInfo.position,
+            onStyleLoadedCallback: _onStyleLoadedCallback,
+          ),
+          Container(
+            padding: EdgeInsets.all(8),
+            alignment: Alignment.topCenter,
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Current source ${styleInfo.name}",
+                  textScaler: TextScaler.linear(1.4),
                 ),
               ),
             ),
-          ],
-        ));
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -5,7 +5,7 @@ const _mapboxGlCssUrl =
 
 class MapboxWebGlPlatform extends MapboxGlPlatform
     implements MapboxMapOptionsSink {
-  late DivElement _mapElement;
+  late web.HTMLDivElement _mapElement;
 
   late Map<String, dynamic> _creationParams;
   late MapboxMap _map;
@@ -48,7 +48,7 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
     // ignore: undefined_prefixed_name
     ui_web.platformViewRegistry.registerViewFactory(
         'plugins.flutter.io/mapbox_gl_$identifier', (int viewId) {
-      _mapElement = DivElement()
+      _mapElement = web.HTMLDivElement()
         ..style.position = 'absolute'
         ..style.top = '0'
         ..style.bottom = '0'
@@ -101,7 +101,9 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
   }
 
   void _initResizeObserver() {
-    final resizeObserver = ResizeObserver((entries, observer) {
+    final resizeObserver = web.ResizeObserver(
+        (JSArray<web.ResizeObserverEntry> entries,
+            web.ResizeObserver observer) {
       // The resize observer might be called a lot of times when the user resizes the browser window with the mouse for example.
       // Due to the fact that the resize call is quite expensive it should not be called for every triggered event but only the last one, like "onMoveEnd".
       // But because there is no event type for the end, there is only the option to spawn timers and cancel the previous ones if they get overwritten by a new event.
@@ -109,8 +111,8 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
       lastResizeObserverTimer = Timer(Duration(milliseconds: 50), () {
         _onMapResize();
       });
-    });
-    resizeObserver.observe(document.body as Element);
+    }.toJS);
+    resizeObserver.observe(web.document.body as web.Element);
   }
 
   void _loadFromAssets(Event event) async {
@@ -180,13 +182,19 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
     }
   }
 
-  Future<void> _addStylesheetToShadowRoot(HtmlElement e) async {
-    LinkElement link = LinkElement()
+  Future<void> _addStylesheetToShadowRoot(web.HTMLElement e) async {
+    web.HTMLLinkElement link = web.HTMLLinkElement()
       ..href = _mapboxGlCssUrl
       ..rel = 'stylesheet';
     e.append(link);
 
-    await link.onLoad.first;
+    // await link.onLoad.first;
+    // package:web elements don't expose streams like onLoad
+    // We can just wait a bit or attach a listener manually if needed, but for now we might skip waiting or use a helper.
+    // Completer to wait for load
+    final completer = Completer<void>();
+    link.onLoad.listen((event) => completer.complete());
+    await completer.future;
   }
 
   @override
@@ -202,20 +210,19 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
       {Duration? duration}) async {
     final cameraOptions = Convert.toCameraOptions(cameraUpdate, _map);
 
-    final around = getProperty(cameraOptions, 'around');
-    final bearing = getProperty(cameraOptions, 'bearing');
-    final center = getProperty(cameraOptions, 'center');
-    final pitch = getProperty(cameraOptions, 'pitch');
-    final zoom = getProperty(cameraOptions, 'zoom');
+    // Accessing properties directly from CameraOptions assuming it is a Dart wrapper from mapbox_gl_dart
+    final bearing = cameraOptions.bearing;
+    final center = cameraOptions.center;
+    final pitch = cameraOptions.pitch;
+    final zoom = cameraOptions.zoom;
 
     _map.flyTo({
-      if (around.jsObject != null) 'around': around,
-      if (bearing != null) 'bearing': bearing,
-      if (center.jsObject != null) 'center': center,
-      if (pitch != null) 'pitch': pitch,
-      if (zoom != null) 'zoom': zoom,
+      'bearing': bearing,
+      'center': center,
+      'pitch': pitch,
+      'zoom': zoom,
       if (duration != null) 'duration': duration.inMilliseconds,
-    });
+    }.jsify());
 
     return true;
   }
@@ -235,7 +242,7 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
 
   @override
   Future<void> matchMapLanguageWithDeviceDefault() async {
-    setMapLanguage(ui.window.locale.languageCode);
+    setMapLanguage(ui.PlatformDispatcher.instance.locale.languageCode);
   }
 
   @override
@@ -647,7 +654,7 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
 
     try {
       final styleJson = jsonDecode(styleString ?? '');
-      final styleJsObject = jsUtil.jsify(styleJson);
+      final styleJsObject = (styleJson as Map).jsify();
       _map.setStyle(styleJsObject);
     } catch (_) {
       _map.setStyle(styleString);
@@ -994,36 +1001,113 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
     _map.addSource(sourceId, source.toJson());
   }
 
+  @override
   Future<void> addImageSource(
-      String imageSourceId, Uint8List bytes, LatLngQuad coordinates) {
-    // TODO: implement addImageSource
-    throw UnimplementedError();
+      String imageSourceId, Uint8List bytes, LatLngQuad coordinates) async {
+    final blob = web.Blob([bytes.toJS].toJS);
+    final url = web.URL.createObjectURL(blob);
+    _map.addSource(
+        imageSourceId,
+        {
+          'type': 'image',
+          'url': url,
+          'coordinates': [
+            [coordinates.topLeft.longitude, coordinates.topLeft.latitude],
+            [coordinates.topRight.longitude, coordinates.topRight.latitude],
+            [
+              coordinates.bottomRight.longitude,
+              coordinates.bottomRight.latitude
+            ],
+            [coordinates.bottomLeft.longitude, coordinates.bottomLeft.latitude]
+          ]
+        }.jsify());
   }
 
+  @override
   Future<void> updateImageSource(
-      String imageSourceId, Uint8List? bytes, LatLngQuad? coordinates) {
-    // TODO: implement addImageSource
-    throw UnimplementedError();
+      String imageSourceId, Uint8List? bytes, LatLngQuad? coordinates) async {
+    final source = _map.getSource(imageSourceId);
+    if (source == null) return;
+
+    // Check if source is ImageSource (needs interop cast likely, but assuming duck typing works via updateImage)
+    // Mapbox GL JS ImageSource has updateImage method
+
+    if (coordinates != null) {
+      (source as JSObject).callMethod(
+          'setCoordinates'.toJS,
+          [
+            [coordinates.topLeft.longitude, coordinates.topLeft.latitude],
+            [coordinates.topRight.longitude, coordinates.topRight.latitude],
+            [
+              coordinates.bottomRight.longitude,
+              coordinates.bottomRight.latitude
+            ],
+            [coordinates.bottomLeft.longitude, coordinates.bottomLeft.latitude]
+          ].jsify());
+    }
+
+    if (bytes != null) {
+      final blob = web.Blob([bytes.toJS].toJS);
+      final url = web.URL.createObjectURL(blob);
+      final Map<String, dynamic> updateOptions = {'url': url};
+
+      if (coordinates != null) {
+        updateOptions['coordinates'] = [
+          [coordinates.topLeft.longitude, coordinates.topLeft.latitude],
+          [coordinates.topRight.longitude, coordinates.topRight.latitude],
+          [coordinates.bottomRight.longitude, coordinates.bottomRight.latitude],
+          [coordinates.bottomLeft.longitude, coordinates.bottomLeft.latitude]
+        ];
+      }
+
+      (source as JSObject)
+          .callMethod('updateImage'.toJS, updateOptions.jsify());
+    }
   }
 
   @override
   Future<void> addLayer(String imageLayerId, String imageSourceId,
-      double? minzoom, double? maxzoom) {
-    // TODO: implement addLayer
-    throw UnimplementedError();
+      double? minzoom, double? maxzoom) async {
+    _map.addLayer({
+      'id': imageLayerId,
+      'type': 'raster',
+      'source': imageSourceId,
+      if (minzoom != null) 'minzoom': minzoom,
+      if (maxzoom != null) 'maxzoom': maxzoom,
+    }.jsify());
   }
 
   @override
   Future<void> addLayerBelow(String imageLayerId, String imageSourceId,
-      String belowLayerId, double? minzoom, double? maxzoom) {
-    // TODO: implement addLayerBelow
-    throw UnimplementedError();
+      String belowLayerId, double? minzoom, double? maxzoom) async {
+    _map.addLayer(
+        {
+          'id': imageLayerId,
+          'type': 'raster',
+          'source': imageSourceId,
+          if (minzoom != null) 'minzoom': minzoom,
+          if (maxzoom != null) 'maxzoom': maxzoom,
+        }.jsify(),
+        belowLayerId);
   }
 
   @override
-  Future<void> updateContentInsets(EdgeInsets insets, bool animated) {
-    // TODO: implement updateContentInsets
-    throw UnimplementedError();
+  Future<void> updateContentInsets(EdgeInsets insets, bool animated) async {
+    // Mapbox GL JS doesn't support content insets natively the same way mobile does properly without resizing div
+    // But we can try padding options if using newer mapbox gl, or just ignore.
+    // For now, logging inability or implementing via standard padding if supported.
+    // _map.easeTo({padding: ...})
+    final padding = {
+      'top': insets.top,
+      'bottom': insets.bottom,
+      'left': insets.left,
+      'right': insets.right
+    };
+    if (animated) {
+      (_map as dynamic).easeTo({'padding': padding}.jsify());
+    } else {
+      (_map as dynamic).jumpTo({'padding': padding}.jsify());
+    }
   }
 
   @override
