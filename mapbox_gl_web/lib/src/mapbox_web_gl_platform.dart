@@ -79,6 +79,7 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
           bearing: camera['bearing'],
           pitch: camera['tilt'],
           preserveDrawingBuffer: true,
+          clickTolerance: 10,
         ),
       );
       _map.on('load', _onStyleLoaded);
