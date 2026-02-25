@@ -24,7 +24,7 @@ dependencies:
   mapbox_gl_dart:
     git:
       url: https://github.com/MichaelOrpheo/mapbox-gl-dart.git
-      ref: c28372a85ec251ca377b878ad222731fcdeaf570
+      ref: 2837fad21dc528b077b36417381b8aaec64893d8
   image: '>=3.0.0 <5.0.0'
   web: ^1.0.0
 
